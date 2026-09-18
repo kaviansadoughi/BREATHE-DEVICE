@@ -1,0 +1,58 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VOC Sensor Data</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>VOC Sensor Data</h1>
+  <button id="connect">Connect to ESP32</button>
+  <div class="data" id="vocData">Waiting for data...</div>
+  <div class="error" id="errorMessage"></div>
+
+  <script src="script.js"></script>
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html>
+  <head><title>ESP32 BLE Test</title></head>
+  <body>
+    <button id="connect">Connect to ESP32</button>
+
+    <script>
+      document.getElementById("connect").addEventListener("click", async () => {
+        try {
+          const device = await navigator.bluetooth.requestDevice({
+            filters: [{ name: "ESP32-VOC-Sensor" }],
+            optionalServices: ["12345678-1234-5678-1234-56789abcdef0"]
+          });
+
+          const server = await device.gatt.connect();
+          console.log("Connected to GATT server:", server);
+
+          const service = await server.getPrimaryService("12345678-1234-5678-1234-56789abcdef0");
+          const characteristic = await service.getCharacteristic("abcd1234-5678-1234-5678-abcdef123456");
+
+          async function readValue() {
+            try {
+              const value = await characteristic.readValue();
+              const decoder = new TextDecoder("utf-8");
+              console.log("PPM: ", decoder.decode(value));
+            } catch (error) {
+              console.error("Read error:", error);
+            }
+          }
+
+          readValue();
+          setInterval(readValue, 1000);
+
+        } catch (error) {
+          console.error("Connection error:", error);
+        }
+      });
+    </script>
+  </body>
+</html>
